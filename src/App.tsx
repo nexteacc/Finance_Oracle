@@ -11,22 +11,29 @@ type AppState = 'input' | 'loading' | 'result';
 function App() {
   const [state, setState] = useState<AppState>('input');
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [currentInput, setCurrentInput] = useState<string>('');
 
   const handleAnalyze = (text: string) => {
+    setCurrentInput(text);
     setState('loading');
   };
 
-  const handleLoadingComplete = () => {
-    // 这里应该从loading中获取输入的文本，为了简化，我们使用一个示例
-    const lastInput = document.querySelector('textarea')?.value || '';
-    const analysisResult = analyzeText(lastInput);
-    setResult(analysisResult);
-    setState('result');
+  const handleLoadingComplete = async () => {
+    try {
+      const analysisResult = await analyzeText(currentInput);
+      setResult(analysisResult);
+      setState('result');
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      // 如果分析失败，显示错误状态或回退到输入状态
+      setState('input');
+    }
   };
 
   const handleReset = () => {
     setState('input');
     setResult(null);
+    setCurrentInput('');
     // 清空输入框
     const textarea = document.querySelector('textarea');
     if (textarea) textarea.value = '';
